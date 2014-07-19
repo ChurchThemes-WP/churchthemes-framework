@@ -103,8 +103,7 @@ endif;
 				$the_title = strip_tags(get_the_title());
 				$the_author = strip_tags(get_the_author());
 
-				$thumbnail = wp_get_attachment_image_src( get_the_post_thumbnail( $post->ID, array(80,80) ) );
-				$the_thumb = $thumbnail[0];
+				$the_thumb = get_the_post_thumbnail( $post->ID, array(80,80) );
 
 				if($query->post_count == 1):
 					echo "<li class=\"first last\">\n";
@@ -116,20 +115,20 @@ endif;
 					echo "<li>\n";
 				endif;
 					echo "<a href=\"".get_permalink()."\">";
-				if($show_image == 'true' && !empty($the_thumb)):
+				if($show_image == 'true' && ! has_post_thumbnail():
 					echo "<img src=\"".$the_thumb."\" alt=\"".$the_title."\">\n";
 				endif;
-				if($show_date == 'true' && ($show_image == 'false' || empty($the_thumb))):
+				if($show_date == 'true' && ($show_image == 'false' || ! has_post_thumbnail())):
 					echo "<p class=\"left\">".get_the_date()."</p>";
 				elseif($show_date == 'true' && $show_image == 'true'):
 					echo "<p>".get_the_date()."</p>";
 				endif;
-				if($show_image == 'false' || empty($the_thumb)):
+				if($show_image == 'false' || ! has_post_thumbnail() ):
 					echo "<h5 class=\"left\">".$the_title."</h5>\n";
 				else:
 					echo "<h5>".$the_title."</h5>\n";
 				endif;
-				if($show_author == 'true' && ($show_image == 'false' || empty($the_thumb))):
+				if($show_author == 'true' && ($show_image == 'false' || ! has_post_thumbnail())):
 					echo "<p class=\"left notranslate\">".$the_author."</p>";
 				elseif($show_author == 'true' && $show_image == 'true'):
 					echo "<p class=\"notranslate\">".$the_author."</p>";
@@ -419,8 +418,7 @@ endif;
 			if( $query->have_posts() ) : while ($query->have_posts()) : $query->the_post(); $i++;
 				$sermon_speaker = get_the_term_list($post->ID, 'sermon_speaker', '', ' + ', '');
 				$the_title = strip_tags(get_the_title());
-				$thumbnail = wp_get_attachment_image_src( get_the_post_thumbnail( $post->ID, array(80,80) ) );
-				$the_thumb = $thumbnail[0];
+				$the_thumb = get_the_post_thumbnail( $post->ID, array(80,80) );
 
 				if($query->post_count == 1):
 					echo "<li class=\"first last\">\n";
@@ -432,20 +430,20 @@ endif;
 					echo "<li>\n";
 				endif;
 				echo "<a href=\"".get_permalink()."\">";
-				if($show_image == 'true' && !empty($the_thumb)):
+				if($show_image == 'true' && has_post_thumbnail() ):
 					echo "<img src=\"".$the_thumb."\" alt=\"".$the_title."\">\n";
 				endif;
-				if($show_date == 'true' && ($show_image == 'false' || empty($the_thumb))):
+				if($show_date == 'true' && ($show_image == 'false' || ! has_post_thumbnail())):
 					echo "<p class=\"left\">".get_the_date()."</p>";
 				elseif($show_date == 'true'):
 					echo "<p>".get_the_date()."</p>";
 				endif;
-				if($show_image == 'false' || empty($the_thumb)):
+				if($show_image == 'false' || ! has_post_thumbnail()):
 					echo "<h5 class=\"left\">".$the_title."</h5>\n";
 				else:
 					echo "<h5>".$the_title."</h5>\n";
 				endif;
-				if($show_speaker == 'true' && !empty($sermon_speaker) && ($show_image == 'false' || empty($the_thumb))):
+				if($show_speaker == 'true' && !empty($sermon_speaker) && ($show_image == 'false' || ! has_post_thumbnail())):
 					echo "<p class=\"left notranslate\">".strip_tags($sermon_speaker)."</p>";
 				elseif($show_speaker == 'true' && !empty($sermon_speaker)):
 					echo "<p class=\"notranslate\">".strip_tags($sermon_speaker)."</p>";
@@ -725,8 +723,7 @@ endif;
 				$the_title = strip_tags(get_the_title());
 				$role = get_post_meta($post->ID, '_ct_ppl_role', true);
 				$emailaddress = get_post_meta($post->ID, '_ct_ppl_emailaddress', true);
-				$thumbnail = wp_get_attachment_image_src( get_the_post_thumbnail( $post->ID, array(80,80) ) );
-				$the_thumb = $thumbnail[0];
+				$the_thumb = get_the_post_thumbnail( $post->ID, array(80,80) );
 
 				if($query->post_count == 1):
 					echo "<li class=\"first last\">\n";
@@ -738,20 +735,20 @@ endif;
 					echo "<li>\n";
 				endif;
 				echo "<a href=\"".get_permalink()."\">";
-				if($show_image == 'true' && !empty($the_thumb)):
+				if($show_image == 'true' && has_post_thumbnail()):
 					echo "<img src=\"".$the_thumb."\" alt=\"".$the_title."\">\n";
 				endif;
-				if($show_role == 'true' && ($show_image == 'false' || empty($the_thumb))):
+				if($show_role == 'true' && ($show_image == 'false' || ! has_post_thumbnail())):
 					echo "<p class=\"left\">".$role."</p>";
 				elseif($show_role == 'true'):
 					echo "<p>".$role."</p>";
 				endif;
-				if($show_image == 'false' || empty($the_thumb)):
+				if($show_image == 'false' || !has_post_thumbnail()):
 					echo "<h5 class=\"left\">".$the_title."</h5>\n";
 				else:
 					echo "<h5>".$the_title."</h5>\n";
 				endif;
-				if($show_email == 'true' && ($show_image == 'false' || empty($the_thumb))):
+				if($show_email == 'true' && ($show_image == 'false' || !has_post_thumbnail())):
 					echo "<p class=\"left notranslate\"><a href=\"mailto:".$emailaddress."\">".$emailaddress."</a></p>";
 				elseif($show_email == 'true'):
 					echo "<p class=\"notranslate\"><a href=\"mailto:".$emailaddress."\">".$emailaddress."</a></p>";
