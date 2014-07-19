@@ -100,9 +100,11 @@ endif;
 			$i = 0;
 			if( $query->have_posts() ) : while ($query->have_posts()) : $query->the_post(); $i++;
 
+				$thumbnail = wp_get_attachment_image_src( get_the_post_thumbnail( $post->ID, array(80,80) ) );
+
 				$the_title = strip_tags(get_the_title());
 				$the_author = strip_tags(get_the_author());
-				$the_thumb = get_the_post_thumbnail( $post->ID, array(80,80) );
+				$the_thumb = $thumbnail[0];
 
 				if($query->post_count == 1):
 					echo "<li class=\"first last\">\n";
