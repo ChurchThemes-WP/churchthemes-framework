@@ -17,7 +17,7 @@ if( !defined('WP_THEME_URL') ) {
 	define( 'WP_THEME_URL', get_template_directory_uri() );
 }
 if( !defined('WP_THEME_DIR') ) {
-	define( 'WP_THEME_DIR', get_template_directory_uri() );
+	define( 'WP_THEME_DIR', get_template_directory() );
 }
 
 
