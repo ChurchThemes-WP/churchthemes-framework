@@ -104,7 +104,7 @@ global $wp_version, $typenow;
 
 // Add CSS
 function reorder_admin_enqueue_scripts() {
-	wp_register_style( 'reorder-main', WP_THEME_DIR . '/lib/admin/reorder/reorder.css', array(), '3.7' );
+	wp_register_style( 'reorder-main', WP_THEME_URL . '/lib/admin/reorder/reorder.css', array(), '3.7' );
 	wp_enqueue_style( 'reorder-main' );
 }
 
@@ -127,12 +127,12 @@ function reorder_head(){
 // Add Javascript
 function reorder_script() {
 	//wp_enqueue_script('reorderScript', WP_THEME_DIR . '/lib/admin/reorder/interface-1.2.js');
-	wp_enqueue_script('reorderScript', WP_THEME_DIR . '/lib/admin/reorder/interface/iutil.js');
-	wp_enqueue_script('reorderScript1', WP_THEME_DIR . '/lib/admin/reorder/interface/idrag-modified.js');
-	wp_enqueue_script('reorderScript2', WP_THEME_DIR . '/lib/admin/reorder/interface/idrop.js');
-	wp_enqueue_script('reorderScript3', WP_THEME_DIR . '/lib/admin/reorder/interface/isortables.js');
-	wp_enqueue_script('reorderScript4', WP_THEME_DIR . '/lib/admin/reorder/inestedsortable.js');
-	wp_enqueue_script('reorderScript5', WP_THEME_DIR . '/lib/admin/reorder/reorder.js');
+	wp_enqueue_script('reorderScript', WP_THEME_URL . '/lib/admin/reorder/interface/iutil.js');
+	wp_enqueue_script('reorderScript1', WP_THEME_URL . '/lib/admin/reorder/interface/idrag-modified.js');
+	wp_enqueue_script('reorderScript2', WP_THEME_URL . '/lib/admin/reorder/interface/idrop.js');
+	wp_enqueue_script('reorderScript3', WP_THEME_URL . '/lib/admin/reorder/interface/isortables.js');
+	wp_enqueue_script('reorderScript4', WP_THEME_URL . '/lib/admin/reorder/inestedsortable.js');
+	wp_enqueue_script('reorderScript5', WP_THEME_URL . '/lib/admin/reorder/reorder.js');
 	wp_localize_script( 'reorderScript5', 'reorder_vars', array(
 		'theme_folder' => esc_attr( wp_get_theme()->template ),
 	));
