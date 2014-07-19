@@ -937,25 +937,6 @@ function get_realpath($img_src) {
 }
 
 
-// Add support for TimThumb
-if(!function_exists('get_thumbnail')) {
-	function get_thumbnail($id, $w, $h) {
-		global $post;
-		$src = wp_get_attachment_image_src( get_post_thumbnail_id($post->ID), array( 300,300 ), false, '');
-		$path = get_realpath($src[0]);
-		$dir = WP_THEME_DIR;
-		if(empty($w)) $w = '80';
-		if(empty($h)) $h = '80';
-		if(!empty($src)):
-			$image = $dir.'/lib/scripts/timthumb.php?src='.$path.'&w='.$w.'&h='.$h;
-			return $image;
-		else:
-			return null;
-		endif;
-	}
-}
-
-
 // Convert HEX colors to RGB
 function churchthemes_hex_to_rgb( $color ) {
 	if ( $color[0] == '#' ) {
