@@ -1,97 +1,456 @@
 <?php
-/**/
-set_site_transient('update_themes', null);
+/**
+ * Theme Updater
+ *
+ * Automatic updates for this theme.
+ *
+ * @package    Automatic Updater
+ * @copyright  Copyright (c) 2014, Walmedia, LLC dba ChurchThemes
+ * @license    http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
+ * @since      1.4
+ */
 
-// NOTE: All variables and functions will need to be prefixed properly to allow multiple plugins to be updated
-
-/******************Change this*******************/
 $api_url = CHURCHTHEMES_UPDATE_API_URL;
-/************************************************/
 
-/*******************Child Theme******************
-//Use this section to provide updates for a child theme
-//If using on child theme be sure to prefix all functions properly to avoid 
-//function exists errors
-if(function_exists('wp_get_theme')){
-    $theme_data = wp_get_theme(get_option('stylesheet'));
-    $theme_version = $theme_data->Version;  
-} else {
-    $theme_data = get_theme_data( get_stylesheet_directory() . '/style.css');
-    $theme_version = $theme_data['Version'];
-}    
-$theme_base = get_option('stylesheet');
-**************************************************/
+/**
+* Create a sub-page for our theme license key
+*
+* @uses add_submenu_page()
+*
+* @return void
+*
+* @since 1.4
+*/
+function churchthemes_sl_license_menu() {
+		add_submenu_page('themes.php','Theme Updates', 'Theme Updates', 'manage_options', 'churchthemes_sl_license', 'churchthemes_sl_license_page');
+}
+add_action('admin_menu', 'churchthemes_sl_license_menu');
 
+/**
+* Display a license key management page
+*
+* @uses get_option()
+* @uses settings_fields()
+* @uses _e()
+* @uses wp_nonce_field()
+* @uses submit_button()
+*
+* @return void
+*
+* @since 1.4
+*/
+function churchthemes_sl_license_page() {
+	$license  = get_option( CHURCHTHEMES_LICENSE_KEY );
+	$status   = get_option( CHURCHTHEMES_LICENSE_KEY . '_status' );
+	?>
+	<div class="wrap">
+		<h2>Theme License</h2>
+		<form method="post" action="options.php">
 
-/***********************Parent Theme**************/
-if(function_exists('wp_get_theme')){
-    $theme_data = wp_get_theme(get_option('template'));
-    $theme_version = $theme_data->Version;  
-} else {
-    $theme_data = get_theme_data( TEMPLATEPATH . '/style.css');
-    $theme_version = $theme_data['Version'];
-}    
-$theme_base = get_option('template');
-/**************************************************/
+			<?php settings_fields('churchthemes_sl_license'); ?>
 
-//Uncomment below to find the theme slug that will need to be setup on the api server
-//var_dump($theme_base);
+			<table class="form-table">
+				<tbody>
+					<tr valign="top">
+						<th scope="row" valign="top">
+							<?php _e('License Key','churchthemes'); ?>
+						</th>
+						<td>
+							<input id="<?php echo CHURCHTHEMES_LICENSE_KEY; ?>" name="<?php echo CHURCHTHEMES_LICENSE_KEY; ?>" type="text" class="regular-text" value="<?php esc_attr_e( $license ); ?>" />
+							<label class="description" for="<?php echo CHURCHTHEMES_LICENSE_KEY; ?>"><?php _e('Enter your license key','churchthemes'); ?></label>
+						</td>
+					</tr>
+					<?php if( $license != '' ) { ?>
+						<tr valign="top">
+							<th scope="row" valign="top">
+								<?php _e('Activate License','churchthemes'); ?>
+							</th>
+							<td>
+								<?php if( $status == 'valid' ) { ?>
+									<span style="color:green;"><?php _e('active','churchthemes'); ?></span>
+									<?php wp_nonce_field( 'churchthemes_sl_nonce', 'churchthemes_sl_nonce' ); ?>
+									<input type="submit" class="button-secondary" name="churchthemes_sl_license_deactivate" value="<?php _e('Deactivate License','churchthemes'); ?>"/>
+								<?php } else {
+									wp_nonce_field( 'churchthemes_sl_nonce', 'churchthemes_sl_nonce' ); ?>
+									<input type="submit" class="button-secondary" name="churchthemes_sl_license_activate" value="<?php _e('Activate License','churchthemes'); ?>"/>
+								<?php } ?>
+							</td>
+						</tr>
+					<?php } ?>
+				</tbody>
+			</table>
+			<?php submit_button(); ?>
 
-add_filter('pre_set_site_transient_update_themes', 'churchthemes_check_for_update');
-
-function churchthemes_check_for_update($checked_data) {
-	global $wp_version, $theme_version, $theme_base, $api_url;
-
-	$request = array(
-		'slug' => $theme_base,
-		'version' => $theme_version 
-	);
-	// Start checking for an update
-	$send_for_check = array(
-		'body' => array(
-			'action' => 'theme_update', 
-			'request' => serialize($request),
-			'api-key' => md5(get_bloginfo('url'))
-		),
-		'user-agent' => 'WordPress/' . $wp_version . '; ' . get_bloginfo('url')
-	);
-	$raw_response = wp_remote_post($api_url, $send_for_check);
-	if (!is_wp_error($raw_response) && ($raw_response['response']['code'] == 200))
-		$response = unserialize($raw_response['body']);
-
-	// Feed the update data into WP updater
-	if (!empty($response)) 
-		$checked_data->response[$theme_base] = $response;
-
-	return $checked_data;
+		</form>
+	<?php
 }
 
-// Take over the Theme info screen on WP multisite
-add_filter('themes_api', 'churchthemes_api_call', 10, 3);
+/**
+* Register our license key options
+*
+* @uses register_setting()
+*
+* @return void
+*
+* @since 1.4
+*/
+function churchthemes_sl_register_option() {
+	// creates our settings in the options table
+	register_setting('churchthemes_sl_license', CHURCHTHEMES_LICENSE_KEY, 'churchthemes_sl_sanitize_license' );
+}
+add_action('admin_init', 'churchthemes_sl_register_option');
 
-function churchthemes_api_call($def, $action, $args) {
-	global $theme_base, $api_url, $theme_version, $api_url;
-	
-	if ($args->slug != $theme_base)
-		return false;
-	
-	// Get the current version
-
-	$args->version = $theme_version;
-	$request_string = prepare_request($action, $args);
-	$request = wp_remote_post($api_url, $request_string);
-
-	if (is_wp_error($request)) {
-		$res = new WP_Error('themes_api_failed', __('An Unexpected HTTP Error occurred during the API request.</p> <p><a href="?" onclick="document.location.reload(); return false;">Try again</a>'), $request->get_error_message());
-	} else {
-		$res = unserialize($request['body']);
-		
-		if ($res === false)
-			$res = new WP_Error('themes_api_failed', __('An unknown error occurred'), $request['body']);
+/**
+* Sanitize the license key
+*
+* @uses get_option()
+* @uses delete_option()
+*
+* @return string $new license key
+*
+* @since 1.4
+*/
+function churchthemes_sl_sanitize_license( $new ) {
+	$old = get_option( CHURCHTHEMES_LICENSE_KEY );
+	if( $old && $old != $new ) {
+		delete_option( CHURCHTHEMES_LICENSE_KEY . '_status' ); // new license has been entered, so must reactivate
 	}
-	
-	return $res;
+	return $new;
 }
 
-if (is_admin())
-	$current = get_transient('update_themes');
+/**
+* Activate license key on remote server
+*
+* We send a remote request to activate the license key
+* being used on the current domain.
+*
+* @uses check_admin_referer()
+* @uses get_option()
+* @uses delete_option()
+* @uses urlencode()
+* @uses wp_remote_get()
+* @uses add_query_arg()
+* @uses is_wp_error()
+* @uses json_decode()
+* @uses wp_remote_retrieve_body()
+* @uses update_option()
+*
+* @return void
+*
+* @since 1.4
+*/
+function churchthemes_sl_activate_license() {
+
+	// listen for our activate button to be clicked
+	if( isset( $_POST['churchthemes_sl_license_activate'] ) ) {
+
+		// run a quick security check
+		if( ! check_admin_referer( 'churchthemes_sl_nonce', 'churchthemes_sl_nonce' ) )
+			return; // get out if we didn't click the Activate button
+
+		// retrieve the license from the database
+		$license = trim( get_option( CHURCHTHEMES_LICENSE_KEY ) );
+
+		if( !$license || $license == '' ){
+			delete_option( CHURCHTHEMES_LICENSE_KEY . '_status' );
+			return;
+		}
+
+		// data to send in our API request
+		$api_params = array(
+			'edd_action'=> 'activate_license',
+			'license'   => $license,
+			'item_name' => urlencode( CHURCHTHEMES_ITEM_NAME ) // the name of our product in EDD
+		);
+
+		// Call the custom API.
+		$response = wp_remote_get( add_query_arg( $api_params, CHURCHTHEMES_UPDATE_API_URL ), array( 'timeout' => 15, 'sslverify' => false ) );
+
+		// make sure the response came back okay
+		if ( is_wp_error( $response ) )
+			return;
+
+		// decode the license data
+		$license_data = json_decode( wp_remote_retrieve_body( $response ) );
+
+		// $license_data->license will be either "active" or "inactive"
+
+		//echo $license_data->license;
+
+		update_option( CHURCHTHEMES_LICENSE_KEY . '_status', $license_data->license );
+
+	}
+}
+add_action('admin_init', 'churchthemes_sl_activate_license');
+
+
+/**
+* Deactivate license key on remote server
+*
+* We send a remote request to deactivate the license key
+* being used on the current domain.
+*
+* @uses check_admin_referer()
+* @uses get_option()
+* @uses delete_option()
+* @uses urlencode()
+* @uses wp_remote_get()
+* @uses add_query_arg()
+* @uses is_wp_error()
+* @uses json_decode()
+* @uses wp_remote_retrieve_body()
+* @uses update_option()
+*
+* @return void
+*
+* @since 1.4
+*/
+function churchthemes_sl_deactivate_license() {
+
+	// listen for our activate button to be clicked
+	if( isset( $_POST['churchthemes_sl_license_deactivate'] ) ) {
+
+		// run a quick security check
+		if( ! check_admin_referer( 'churchthemes_sl_nonce', 'churchthemes_sl_nonce' ) )
+			return; // get out if we didn't click the Activate button
+
+		// retrieve the license from the database
+		$license = trim( get_option( CHURCHTHEMES_LICENSE_KEY ) );
+
+		if( !$license || $license == '' ){
+			delete_option( CHURCHTHEMES_LICENSE_KEY . '_status' );
+			return;
+		}
+
+		// data to send in our API request
+		$api_params = array(
+			'edd_action'=> 'deactivate_license',
+			'license'   => $license,
+			'item_name' => urlencode( CHURCHTHEMES_ITEM_NAME ) // the name of our product in EDD
+		);
+
+		// Call the custom API.
+		$response = wp_remote_get( add_query_arg( $api_params, CHURCHTHEMES_UPDATE_API_URL ), array( 'timeout' => 15, 'sslverify' => false ) );
+
+		// make sure the response came back okay
+		if ( is_wp_error( $response ) )
+			return;
+
+		// decode the license data
+		$license_data = json_decode( wp_remote_retrieve_body( $response ) );
+
+		// $license_data->license will be either "deactivated" or "failed"
+		if( $license_data->license == 'deactivated' )
+			delete_option( CHURCHTHEMES_LICENSE_KEY . '_status' );
+
+	}
+}
+add_action('admin_init', 'churchthemes_sl_deactivate_license');
+
+
+/**
+* Check license on server
+*
+* We send a remote request to check the validity of the
+* license and update the status based on the response.
+*
+* @global $wp_version
+*
+* @uses get_option()
+* @uses wp_remote_get()
+* @uses add_query_arg()
+* @uses is_wp_error()
+* @uses json_decode()
+* @uses wp_remote_retrieve_body()
+*
+* @return string valid or invalid
+*
+* @since 1.4
+*/
+function churchthemes_sl_check_license() {
+
+	global $wp_version;
+
+	$license = trim( get_option( CHURCHTHEMES_LICENSE_KEY ) );
+
+	$api_params = array(
+		'edd_action' => 'check_license',
+		'license' => $license,
+		'item_name' => urlencode( CHURCHTHEMES_ITEM_NAME )
+	);
+
+	// Call the custom API.
+	$response = wp_remote_get( add_query_arg( $api_params, CHURCHTHEMES_UPDATE_API_URL ), array( 'timeout' => 15, 'sslverify' => false ) );
+
+	if ( is_wp_error( $response ) )
+		return false;
+
+	$license_data = json_decode( wp_remote_retrieve_body( $response ) );
+
+	if( $license_data->license == 'valid' ) {
+		return 'valid';
+		// this license is still valid
+	} else {
+		return 'invalid';
+		// this license is no longer valid
+	}
+}
+
+/**
+ * Enforce the license key
+ *
+ * Checks to see if the license key is valid, and if invalid, remove
+ * the key status from the database.
+ */
+function churchthemes_sl_enforce_license(){
+	$license_status = churchthemes_sl_check_license();
+
+	if( $license_status !== 'valid' )
+		delete_option( CHURCHTHEMES_LICENSE_KEY . '_status' );
+}
+
+/**
+ * Tell user license key has expired.
+ */
+function churchthemes_sl_license_expired() {
+		echo 'Your license key has expired. Please <a href="http://churchthemes.net">purchase a new license key</a> to enable theme support and automatic updates.';
+}
+
+class UpThemes_Theme_Updater {
+	private $remote_api_url;
+	private $request_data;
+	private $response_key;
+	private $theme_slug;
+	private $license_key;
+	private $version;
+	private $author;
+
+	function __construct( $args = array() ) {
+		$args = wp_parse_args( $args, array(
+			'remote_api_url' => CHURCHTHEMES_UPDATE_API_URL,
+			'request_data'   => array(),
+			'theme_slug'     => get_template(),
+			'item_name'      => '',
+			'license'        => '',
+			'version'        => '',
+			'author'         => ''
+		) );
+		extract( $args );
+
+		$theme                = wp_get_theme( sanitize_key( $theme_slug ) );
+		$this->license        = $license;
+		$this->item_name      = $item_name;
+		$this->version        = ! empty( $version ) ? $version : $theme->get( 'Version' );
+		$this->theme_slug     = sanitize_key( $theme_slug );
+		$this->author         = $author;
+		$this->remote_api_url = $remote_api_url;
+		$this->response_key   = $this->theme_slug . '-update-response';
+
+
+		add_filter( 'site_transient_update_themes', array( &$this, 'theme_update_transient' ) );
+		add_filter( 'delete_site_transient_update_themes', array( &$this, 'delete_theme_update_transient' ) );
+		add_action( 'load-update-core.php', array( &$this, 'delete_theme_update_transient' ) );
+		add_action( 'load-themes.php', array( &$this, 'delete_theme_update_transient' ) );
+		add_action( 'load-themes.php', array( &$this, 'load_themes_screen' ) );
+	}
+
+	function load_themes_screen() {
+		add_thickbox();
+		add_action( 'admin_notices', array( &$this, 'update_nag' ) );
+	}
+
+	function update_nag() {
+		$theme = wp_get_theme( $this->theme_slug );
+
+		$api_response = get_transient( $this->response_key );
+
+		if( false === $api_response )
+			return;
+
+		$update_url = wp_nonce_url( 'update.php?action=upgrade-theme&amp;theme=' . urlencode( $this->theme_slug ), 'upgrade-theme_' . $this->theme_slug );
+		$update_onclick = ' onclick="if ( confirm(\'' . esc_js( __( "Updating this theme will lose any customizations you have made. 'Cancel' to stop, 'OK' to update." ) ) . '\') ) {return true;}return false;"';
+
+		if ( version_compare( $this->version, $api_response->new_version, '<' ) ) {
+
+			echo '<div id="update-nag">';
+				printf( '<strong>%1$s %2$s</strong> is available. <a href="%3$s" class="thickbox" title="%4s">Check out what\'s new</a> or <a href="%5$s"%6$s>update now</a>.',
+					$theme->get( 'Name' ),
+					$api_response->new_version,
+					'#TB_inline?width=640&amp;inlineId=' . $this->theme_slug . '_changelog',
+					$theme->get( 'Name' ),
+					$update_url,
+					$update_onclick
+				);
+			echo '</div>';
+			echo '<div id="' . $this->theme_slug . '_' . 'changelog" style="display:none;">';
+				echo wpautop( $api_response->sections['changelog'] );
+			echo '</div>';
+		}
+	}
+
+	function theme_update_transient( $value ) {
+		$update_data = $this->check_for_update();
+		if ( $update_data ) {
+			$value->response[ $this->theme_slug ] = $update_data;
+		}
+		return $value;
+	}
+
+	function delete_theme_update_transient() {
+		delete_transient( $this->response_key );
+	}
+
+	function check_for_update() {
+
+		$theme = wp_get_theme( $this->theme_slug );
+
+		$update_data = get_transient( $this->response_key );
+		if ( false === $update_data ) {
+			$failed = false;
+
+			if( empty( $this->license ) )
+				return false;
+
+			$api_params = array(
+				'edd_action'  => 'get_version',
+				'license'     => $this->license,
+				'name'      => $this->item_name,
+				'slug'      => $this->theme_slug,
+				'author'    => $this->author
+			);
+
+			$response = wp_remote_post( $this->remote_api_url, array( 'timeout' => 15, 'sslverify' => false, 'body' => $api_params ) );
+
+			// make sure the response was successful
+			if ( is_wp_error( $response ) || 200 != wp_remote_retrieve_response_code( $response ) ) {
+				$failed = true;
+			}
+
+			$update_data = json_decode( wp_remote_retrieve_body( $response ) );
+
+			if ( ! is_object( $update_data ) ) {
+				$failed = true;
+			}
+
+			// if the response failed, try again in 30 minutes
+			if ( $failed ) {
+				$data = new stdClass;
+				$data->new_version = $this->version;
+				set_transient( $this->response_key, $data, strtotime( '+30 minutes' ) );
+				return false;
+			}
+
+			// if the status is 'ok', return the update arguments
+			if ( ! $failed ) {
+				$update_data->sections = maybe_unserialize( $update_data->sections );
+				set_transient( $this->response_key, $update_data, strtotime( '+12 hours' ) );
+			}
+		}
+
+		if ( version_compare( $this->version, $update_data->new_version, '>=' ) ) {
+			return false;
+		}
+
+		return (array) $update_data;
+	}
+}
