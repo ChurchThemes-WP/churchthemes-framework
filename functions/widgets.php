@@ -103,7 +103,7 @@ endif;
 				$the_title = strip_tags(get_the_title());
 				$the_author = strip_tags(get_the_author());
 
-				$the_thumb = get_the_post_thumbnail( $post->ID, array(80,80) );
+				$the_thumb = get_the_post_thumbnail( $post->ID, 'widget-thumb' );
 
 				if($query->post_count == 1):
 					echo "<li class=\"first last\">\n";
@@ -418,7 +418,7 @@ endif;
 			if( $query->have_posts() ) : while ($query->have_posts()) : $query->the_post(); $i++;
 				$sermon_speaker = get_the_term_list($post->ID, 'sermon_speaker', '', ' + ', '');
 				$the_title = strip_tags(get_the_title());
-				$the_thumb = get_the_post_thumbnail( $post->ID, array(80,80) );
+				$the_thumb = get_the_post_thumbnail( $post->ID, 'widget-thumb' );
 
 				if($query->post_count == 1):
 					echo "<li class=\"first last\">\n";
@@ -723,7 +723,7 @@ endif;
 				$the_title = strip_tags(get_the_title());
 				$role = get_post_meta($post->ID, '_ct_ppl_role', true);
 				$emailaddress = get_post_meta($post->ID, '_ct_ppl_emailaddress', true);
-				$the_thumb = get_the_post_thumbnail( $post->ID, array(80,80) );
+				$the_thumb = get_the_post_thumbnail( $post->ID, 'widget-thumb' );
 
 				if($query->post_count == 1):
 					echo "<li class=\"first last\">\n";

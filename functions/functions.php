@@ -44,6 +44,7 @@ if(function_exists('add_image_size')){
 	add_image_size('archive', 250, 9999, false);
 	add_image_size('admin', 120, 9999, false);
 	add_image_size('thumb', 75, 75, true);
+	add_image_size('widget-thumb',80,80,true);
 }
 
 
