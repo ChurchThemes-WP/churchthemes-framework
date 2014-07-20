@@ -42,7 +42,6 @@ require_once( $functions_path . 'search-excerpt.php' );    // Customize excerpt 
 require_once( $functions_path . 'post-types.php' );        // Custom post types
 require_once( $functions_path . 'widgets.php' );           // Custom theme widgets
 require_once( $functions_path . 'force-download.php' );    // Allow force downloads via query var
-require_once( $functions_path . 'presstrends.php' );       // PressTrends
 
 if ( !function_exists( 'entry_views_update' ) ) {
 	require_once( $functions_path . 'entry-views.php' ); // Entry views extension
