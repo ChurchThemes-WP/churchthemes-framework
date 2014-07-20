@@ -116,7 +116,7 @@ endif;
 				endif;
 					echo "<a href=\"".get_permalink()."\">";
 				if($show_image == 'true' && ! has_post_thumbnail()):
-					echo "<img src=\"".$the_thumb."\" alt=\"".$the_title."\">\n";
+					echo $the_thumb."\n";
 				endif;
 				if($show_date == 'true' && ($show_image == 'false' || ! has_post_thumbnail())):
 					echo "<p class=\"left\">".get_the_date()."</p>";
@@ -431,7 +431,7 @@ endif;
 				endif;
 				echo "<a href=\"".get_permalink()."\">";
 				if($show_image == 'true' && has_post_thumbnail() ):
-					echo "<img src=\"".$the_thumb."\" alt=\"".$the_title."\">\n";
+					echo $the_thumb."\n";
 				endif;
 				if($show_date == 'true' && ($show_image == 'false' || ! has_post_thumbnail())):
 					echo "<p class=\"left\">".get_the_date()."</p>";
@@ -736,7 +736,7 @@ endif;
 				endif;
 				echo "<a href=\"".get_permalink()."\">";
 				if($show_image == 'true' && has_post_thumbnail()):
-					echo "<img src=\"".$the_thumb."\" alt=\"".$the_title."\">\n";
+					echo $the_thumb."\n";
 				endif;
 				if($show_role == 'true' && ($show_image == 'false' || ! has_post_thumbnail())):
 					echo "<p class=\"left\">".$role."</p>";
