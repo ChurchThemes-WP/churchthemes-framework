@@ -10,8 +10,6 @@
  * @since      1.4
  */
 
-$api_url = CHURCHTHEMES_UPDATE_API_URL;
-
 /**
 * Create a sub-page for our theme license key
 *
