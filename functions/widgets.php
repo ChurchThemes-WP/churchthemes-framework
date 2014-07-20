@@ -115,7 +115,7 @@ endif;
 					echo "<li>\n";
 				endif;
 					echo "<a href=\"".get_permalink()."\">";
-				if($show_image == 'true' && ! has_post_thumbnail():
+				if($show_image == 'true' && ! has_post_thumbnail()):
 					echo "<img src=\"".$the_thumb."\" alt=\"".$the_title."\">\n";
 				endif;
 				if($show_date == 'true' && ($show_image == 'false' || ! has_post_thumbnail())):
