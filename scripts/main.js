@@ -21,6 +21,7 @@ var ChurchThemes = {
         ChurchThemes.sermonFilters($);
         ChurchThemes.flexSlider($);
         ChurchThemes.placeholderSupport($);
+        ChurchThemes.downloadAttribute($);
     },
 
     /**
@@ -100,6 +101,46 @@ var ChurchThemes = {
                 $("textarea[placeholder]").placeholder();
             }
         }
+    },
+    
+    /**
+     * HTML5 Download Attribute
+     */
+    downloadAttribute: function($) {
+        var aLink = document.createElement('a');
+        
+        //bail if no download attribute support
+        if (typeof aLink.download == "undefined") {
+            return;
+        }
+        
+        //Store download link elements
+        var downloadLinks = $('a[href*="ct_download=http"]');
+        
+        //bail of no download links
+        if( !downloadLinks.length ){
+            return;
+        }
+        
+        //add HTML download attribute to download links
+        downloadLinks.each(function(){
+            
+            //look for file name
+            var fileURL = $(this).attr('href').match(/ct_download=([^&]+)/);
+            
+            //bail if there isn't a download file URL match
+            if ( fileURL == null ) {
+                return;
+            }
+            
+            //strip URL down to file name
+            var fileName = fileURL[1].replace(/^.*\//g, '');
+            
+            //set the HTML5 download attribute
+            $(this).attr('download', fileName);
+            
+        });
+        
     }
 
 }
