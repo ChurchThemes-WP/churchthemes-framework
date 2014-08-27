@@ -139,6 +139,9 @@ var ChurchThemes = {
             //set the HTML5 download attribute
             $(this).attr('download', fileName);
             
+            //set the URL to raw file instead of ct_download
+            $(this).attr('href', fileURL[1]);
+            
         });
         
     }
